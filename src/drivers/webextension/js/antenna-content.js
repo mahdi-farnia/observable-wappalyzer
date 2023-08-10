@@ -2,7 +2,7 @@
 /* eslint-env browser */
 /* globals chrome */
 
-function injectScript(url) {
+function mountAntenna(url) {
   const script = document.createElement('script')
 
   return new Promise((resolve, reject) => {
@@ -26,8 +26,17 @@ function injectScript(url) {
 
 const AntennaContent = {
   async init() {
-    await injectScript('js/antenna.js')
+    await mountAntenna('js/antenna.js')
+
+    const detections = await AntennaContent.driver('getDetectionsByURL', [
+      location.href,
+    ])
+
+    AntennaContent.broadCast(detections)
+
+    chrome.runtime.onMessage.addListener(AntennaContent.onMessage)
   },
+
   driver(func, args) {
     return new Promise((resolve) => {
       chrome.runtime.sendMessage(
@@ -59,6 +68,16 @@ const AntennaContent = {
         }
       )
     })
+  },
+
+  broadCast(detections) {
+    postMessage({ event: 'wappalyzer-data', detections: detections ?? [] })
+  },
+
+  onMessage({ detections }, sender, callback) {
+    AntennaContent.broadCast(detections)
+
+    callback()
   },
 }
 

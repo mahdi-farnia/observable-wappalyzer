@@ -8,15 +8,12 @@ function mountAntenna(url) {
   return new Promise((resolve, reject) => {
     script.onerror = reject
 
-    window.addEventListener(
-      'message',
-      ({ data }) => {
-        if (!data.wappalyzerAntenna) return
+    window.addEventListener('message', function onScriptReady({ data }) {
+      if (!data.wappalyzerAntenna) return
 
-        resolve()
-      },
-      { once: true }
-    )
+      resolve()
+      window.removeEventListener('message', onScriptReady)
+    })
 
     script.setAttribute('src', chrome.runtime.getURL(url))
 

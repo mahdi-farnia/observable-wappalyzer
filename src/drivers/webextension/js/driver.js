@@ -365,6 +365,36 @@ const Driver = {
     })
   },
 
+  async antennaContent(url, detections) {
+    const [tab] = await promisify(chrome.tabs, 'query', {
+      url: globEscape(url),
+    })
+
+    if (!tab) {
+      return
+    }
+
+    if (tab.status === 'unloaded') {
+      // not ready for sendMessage
+      return
+    }
+
+    return new Promise((resolve, reject) => {
+      chrome.tabs.sendMessage(
+        tab.id,
+        {
+          source: 'driver.js',
+          detections: detections
+            ? Array.isArray(detections)
+              ? detections
+              : [detections]
+            : [],
+        },
+        resolve
+      )
+    })
+  },
+
   /**
    * Analyse response headers
    * @param {Object} request
@@ -708,6 +738,8 @@ const Driver = {
     )
 
     Driver.log({ hostname, technologies: resolved })
+
+    Driver.antennaContent(url, resolved)
   },
 
   /**
@@ -801,6 +833,13 @@ const Driver = {
 
     const { url } = tab
 
+    return await Driver.getDetectionsByURL(url)
+  },
+
+  /**
+   * Get the detected technologies for specific URL
+   */
+  async getDetectionsByURL(url) {
     if (await Driver.isDisabledDomain(url)) {
       await Driver.setIcon(url, [])
 

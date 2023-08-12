@@ -46,13 +46,24 @@
         "js/content.js"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "js/antenna-content.js"
+      ],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
       "resources": [
         "js/js.js",
-        "js/dom.js"
+        "js/dom.js",
+        "js/antenna.js"
       ],
       "matches": [
         "http://*/*",
